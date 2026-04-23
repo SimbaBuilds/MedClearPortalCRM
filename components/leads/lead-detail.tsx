@@ -169,13 +169,13 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-4 border-b bg-white">
         <div>
           <h2 className="font-semibold text-lg">{lead.physician || lead.associated_medspa || "Unknown"}</h2>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1.5">
             <StatusBadge status={lead.status} />
-            {lead.metro && <Badge variant="outline">{lead.metro}</Badge>}
-            {lead.tier && <Badge variant="outline">Tier {lead.tier}</Badge>}
+            {lead.metro && <Badge variant="outline" className="text-[11px]">{lead.metro}</Badge>}
+            {lead.tier && <Badge className="bg-brand-subtle text-brand border-0 text-[11px]">Tier {lead.tier}</Badge>}
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose}>
@@ -183,11 +183,11 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Contact Info */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm">Contact Info</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="py-3 pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact Info</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -236,9 +236,9 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
         </Card>
 
         {/* Details */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm">Details</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="py-3 pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {lead.credentials && (
@@ -294,9 +294,9 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
         </Card>
 
         {/* Status */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm">Status</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="py-3 pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</CardTitle>
           </CardHeader>
           <CardContent>
             <Select
@@ -321,9 +321,9 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
         </Card>
 
         {/* Actions */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm">Actions</CardTitle>
+        <Card className="shadow-sm border-brand/20">
+          <CardHeader className="py-3 pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-brand">Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2 flex-wrap">
@@ -383,41 +383,44 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
 
             {/* Enroll in sequence — now with preview */}
             <div>
-              <Label className="text-xs mb-1.5 block">Enroll in Email Sequence</Label>
-              <div className="flex gap-2 flex-wrap">
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Email Sequence</Label>
+              <div className="space-y-2">
                 {sequences.map((seq) => {
                   const isActive = lead.current_sequence_id === seq.id
                   return (
-                    <div key={seq.id} className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant={isActive ? "secondary" : "outline"}
-                        onClick={() => openPreview(seq)}
-                        disabled={isActive}
-                      >
-                        <Eye className="h-3.5 w-3.5 mr-1.5" />
-                        Preview & Enroll
-                        {isActive && " (Active)"}
-                      </Button>
+                    <div key={seq.id} className={`rounded-lg border p-3 ${isActive ? "bg-brand-subtle/50 border-brand/20" : "bg-muted/30"}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">{seq.name}</span>
+                        {isActive && <Badge className="bg-brand text-white border-0 text-[10px]">Active</Badge>}
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant={isActive ? "secondary" : "default"}
+                          className={isActive ? "" : "bg-brand hover:bg-brand-light"}
+                          onClick={() => openPreview(seq)}
+                          disabled={isActive}
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1.5" />
+                          Preview & Enroll
+                        </Button>
+                        {seq.steps?.map((step) => (
+                          <Button
+                            key={step.id}
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs h-8"
+                            onClick={() => prefillFromStep(step)}
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            Step {step.step_number}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   )
                 })}
               </div>
-              {/* Also offer individual step sends */}
-              {sequences.map((seq) =>
-                seq.steps?.map((step) => (
-                  <Button
-                    key={step.id}
-                    size="sm"
-                    variant="ghost"
-                    className="mt-1 text-xs h-7"
-                    onClick={() => prefillFromStep(step)}
-                  >
-                    <Send className="h-3 w-3 mr-1" />
-                    Send Step {step.step_number} individually
-                  </Button>
-                ))
-              )}
             </div>
 
             <Separator />
@@ -442,9 +445,9 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
         </Card>
 
         {/* Outreach History */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm">Outreach History</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="py-3 pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Outreach History</CardTitle>
           </CardHeader>
           <CardContent>
             {outreachLog.length === 0 ? (

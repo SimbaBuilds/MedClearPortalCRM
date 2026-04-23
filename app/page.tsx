@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -15,7 +16,7 @@ import { LeadsTable } from "@/components/leads/leads-table"
 import { LeadDetail } from "@/components/leads/lead-detail"
 import { SequenceView } from "@/components/sequences/sequence-view"
 import type { Lead, EmailSequence } from "@/lib/types"
-import { Search, Users, Mail, BarChart3 } from "lucide-react"
+import { Search, Users, Mail, BarChart3, Target } from "lucide-react"
 
 export default function Dashboard() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -81,33 +82,42 @@ export default function Dashboard() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <header className="border-b bg-background px-6 py-3">
+      <header className="border-b bg-white px-6 py-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="font-semibold text-lg">GFE Acquisition</h1>
-            <Badge variant="outline" className="text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+                <Target className="h-4 w-4 text-white" />
+              </div>
+              <h1 className="font-semibold text-lg">GFE Acquisition</h1>
+            </div>
+            <Badge className="bg-brand-subtle text-brand border-0 text-xs font-medium">
               {stats.total} leads
             </Badge>
           </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-gray-400" /> {stats.new} new
+          <div className="flex items-center gap-5 text-sm">
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+              <span className="font-medium text-foreground">{stats.new}</span> new
             </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-blue-500" /> {stats.active} active
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+              <span className="font-medium text-foreground">{stats.active}</span> active
             </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" /> {stats.booked} booked
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span className="font-medium text-foreground">{stats.booked}</span> booked
             </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-teal-500" /> {stats.won} won
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand" />
+              <span className="font-medium text-foreground">{stats.won}</span> won
             </span>
           </div>
         </div>
       </header>
 
       <Tabs defaultValue="leads" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b px-6">
+        <div className="border-b px-6 bg-white">
           <TabsList className="h-10">
             <TabsTrigger value="leads" className="gap-1.5">
               <Users className="h-4 w-4" />
@@ -127,57 +137,69 @@ export default function Dashboard() {
         <TabsContent value="leads" className="flex-1 flex overflow-hidden m-0">
           <div className={`flex-1 flex flex-col overflow-hidden ${selectedLead ? "border-r" : ""}`}>
             {/* Filters */}
-            <div className="p-4 border-b flex gap-3 items-center flex-wrap">
+            <div className="px-4 py-3 border-b bg-muted/30 flex gap-3 items-end flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search physicians, medspas, locations..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-9 h-9"
-                />
+                <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 block">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Physicians, medspas, locations..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="pl-9 h-9 bg-white"
+                  />
+                </div>
               </div>
-              <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
-                <SelectTrigger className="w-[150px] h-9">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="contacted">Contacted</SelectItem>
-                  <SelectItem value="sequence_active">Sequence Active</SelectItem>
-                  <SelectItem value="replied">Replied</SelectItem>
-                  <SelectItem value="meeting_booked">Meeting Booked</SelectItem>
-                  <SelectItem value="closed_won">Closed Won</SelectItem>
-                  <SelectItem value="closed_lost">Closed Lost</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={metroFilter} onValueChange={(v) => v && setMetroFilter(v)}>
-                <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue placeholder="Metro" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Metros</SelectItem>
-                  {metros.map((m) => (
-                    <SelectItem key={m} value={m!}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={tierFilter} onValueChange={(v) => v && setTierFilter(v)}>
-                <SelectTrigger className="w-[120px] h-9">
-                  <SelectValue placeholder="Tier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tiers</SelectItem>
-                  {tiers.map((t) => (
-                    <SelectItem key={t} value={t!}>
-                      Tier {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 block">Status</Label>
+                <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
+                  <SelectTrigger className="w-[150px] h-9 bg-white">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="contacted">Contacted</SelectItem>
+                    <SelectItem value="sequence_active">Sequence Active</SelectItem>
+                    <SelectItem value="replied">Replied</SelectItem>
+                    <SelectItem value="meeting_booked">Meeting Booked</SelectItem>
+                    <SelectItem value="closed_won">Closed Won</SelectItem>
+                    <SelectItem value="closed_lost">Closed Lost</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 block">Metro</Label>
+                <Select value={metroFilter} onValueChange={(v) => v && setMetroFilter(v)}>
+                  <SelectTrigger className="w-[140px] h-9 bg-white">
+                    <SelectValue placeholder="Metro" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Metros</SelectItem>
+                    {metros.map((m) => (
+                      <SelectItem key={m} value={m!}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 block">Tier</Label>
+                <Select value={tierFilter} onValueChange={(v) => v && setTierFilter(v)}>
+                  <SelectTrigger className="w-[120px] h-9 bg-white">
+                    <SelectValue placeholder="Tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Tiers</SelectItem>
+                    {tiers.map((t) => (
+                      <SelectItem key={t} value={t!}>
+                        Tier {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Table */}
@@ -198,7 +220,7 @@ export default function Dashboard() {
 
           {/* Detail panel */}
           {selectedLead && (
-            <div className="w-[480px] shrink-0 overflow-hidden border-l">
+            <div className="w-[480px] shrink-0 overflow-hidden border-l bg-muted/20">
               <LeadDetail
                 key={selectedLead.id}
                 lead={selectedLead}
@@ -210,9 +232,9 @@ export default function Dashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="sequences" className="flex-1 overflow-auto m-0 p-6">
+        <TabsContent value="sequences" className="flex-1 overflow-auto m-0 p-6 bg-muted/20">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-lg font-semibold mb-4">Email Sequences</h2>
+            <h2 className="text-lg font-semibold mb-1">Email Sequences</h2>
             <p className="text-sm text-muted-foreground mb-6">
               Pre-built outreach sequences. Enroll leads from the lead detail panel.
             </p>
@@ -220,40 +242,59 @@ export default function Dashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="pipeline" className="flex-1 overflow-auto m-0 p-6">
+        <TabsContent value="pipeline" className="flex-1 overflow-auto m-0 p-6 bg-muted/20">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-lg font-semibold mb-4">Pipeline Overview</h2>
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <h2 className="text-lg font-semibold mb-6">Pipeline Overview</h2>
+            <div className="grid grid-cols-4 gap-4 mb-10">
               {[
-                { label: "New", count: stats.new, color: "bg-gray-100" },
-                { label: "Active Outreach", count: stats.active, color: "bg-blue-100" },
-                { label: "Meeting Booked", count: stats.booked, color: "bg-emerald-100" },
-                { label: "Closed Won", count: stats.won, color: "bg-teal-100" },
+                { label: "New", count: stats.new, bg: "bg-white", border: "border-slate-200", dot: "bg-slate-400" },
+                { label: "Active Outreach", count: stats.active, bg: "bg-blue-50", border: "border-blue-200", dot: "bg-blue-500" },
+                { label: "Meeting Booked", count: stats.booked, bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" },
+                { label: "Closed Won", count: stats.won, bg: "bg-brand-subtle", border: "border-brand/20", dot: "bg-brand" },
               ].map((stage) => (
-                <div key={stage.label} className={`${stage.color} rounded-lg p-4`}>
-                  <div className="text-2xl font-bold">{stage.count}</div>
-                  <div className="text-sm text-muted-foreground">{stage.label}</div>
+                <div key={stage.label} className={`${stage.bg} border ${stage.border} rounded-xl p-5`}>
+                  <div className="text-3xl font-bold mb-1">{stage.count}</div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${stage.dot}`} />
+                    {stage.label}
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* Metro breakdown */}
-            <h3 className="font-medium mb-3">By Metro</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <h3 className="font-semibold mb-3">By Metro</h3>
+            <div className="grid grid-cols-2 gap-4">
               {metros.map((metro) => {
                 const metroLeads = leads.filter((l) => l.metro === metro)
+                const t1 = metroLeads.filter((l) => l.tier === "1").length
+                const t2 = metroLeads.filter((l) => l.tier === "2").length
+                const t3 = metroLeads.filter((l) => l.tier === "3").length
                 return (
-                  <div key={metro} className="border rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-sm">{metro}</span>
-                      <Badge variant="outline">{metroLeads.length}</Badge>
+                  <div key={metro} className="bg-white border rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-sm">{metro}</span>
+                      <Badge className="bg-brand-subtle text-brand border-0 text-xs">{metroLeads.length}</Badge>
                     </div>
-                    <div className="flex gap-1 text-xs text-muted-foreground">
-                      <span>{metroLeads.filter((l) => l.tier === "1").length} Tier 1</span>
-                      <span>·</span>
-                      <span>{metroLeads.filter((l) => l.tier === "2").length} Tier 2</span>
-                      <span>·</span>
-                      <span>{metroLeads.filter((l) => l.tier === "3").length} Tier 3</span>
+                    <div className="flex gap-3 text-xs">
+                      <span className="flex items-center gap-1">
+                        <span className="w-4 h-1.5 rounded-full bg-brand" />
+                        {t1} Tier 1
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-4 h-1.5 rounded-full bg-blue-400" />
+                        {t2} Tier 2
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-4 h-1.5 rounded-full bg-slate-300" />
+                        {t3} Tier 3
+                      </span>
+                    </div>
+                    {/* Mini bar */}
+                    <div className="flex mt-3 h-1.5 rounded-full overflow-hidden bg-muted">
+                      {t1 > 0 && <div className="bg-brand" style={{ width: `${(t1 / metroLeads.length) * 100}%` }} />}
+                      {t2 > 0 && <div className="bg-blue-400" style={{ width: `${(t2 / metroLeads.length) * 100}%` }} />}
+                      {t3 > 0 && <div className="bg-slate-300" style={{ width: `${(t3 / metroLeads.length) * 100}%` }} />}
                     </div>
                   </div>
                 )

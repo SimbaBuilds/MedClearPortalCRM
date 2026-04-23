@@ -101,7 +101,7 @@ export function SequenceView({ sequences, onRefresh }: SequenceViewProps) {
                     {idx > 0 && <Separator className="mb-4" />}
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                        <div className="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center text-sm font-semibold">
                           {step.step_number}
                         </div>
                         {idx < (seq.steps?.length ?? 0) - 1 && (
