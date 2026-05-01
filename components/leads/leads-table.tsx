@@ -42,13 +42,14 @@ export function LeadsTable({ leads, selectedId, onSelect }: LeadsTableProps) {
             <TableHead className="w-[110px] text-[11px] uppercase tracking-wider font-semibold">Phone</TableHead>
             <TableHead className="w-[44px] text-[11px] uppercase tracking-wider font-semibold" title="Practice email obtained">PE</TableHead>
             <TableHead className="w-[44px] text-[11px] uppercase tracking-wider font-semibold">Web</TableHead>
+            <TableHead className="w-[110px] text-[11px] uppercase tracking-wider font-semibold" title="Next follow-up date (auto = 7 business days after last outreach)">Next F/U</TableHead>
             <TableHead className="w-[240px] text-[11px] uppercase tracking-wider font-semibold">Notes</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {leads.length === 0 && (
             <TableRow>
-              <TableCell colSpan={11} className="text-center text-muted-foreground py-12">
+              <TableCell colSpan={12} className="text-center text-muted-foreground py-12">
                 No leads found
               </TableCell>
             </TableRow>
@@ -147,6 +148,27 @@ export function LeadsTable({ leads, selectedId, onSelect }: LeadsTableProps) {
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
+                )}
+              </TableCell>
+              <TableCell className="text-xs">
+                {lead.next_followup_at ? (
+                  <span
+                    className={
+                      lead.next_followup_manual_override
+                        ? "text-amber-700 font-medium"
+                        : "text-muted-foreground"
+                    }
+                    title={
+                      lead.next_followup_manual_override
+                        ? "Manually set"
+                        : "Auto: 7 business days after last outreach"
+                    }
+                  >
+                    {new Date(lead.next_followup_at).toLocaleDateString()}
+                    {lead.next_followup_manual_override && " *"}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
               <TableCell className="max-w-[240px]">

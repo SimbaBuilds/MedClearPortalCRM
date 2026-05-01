@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 
+function addBusinessDays(start: Date, n: number): Date {
+  const result = new Date(start)
+  let added = 0
+  while (added < n) {
+    result.setUTCDate(result.getUTCDate() + 1)
+    const dow = result.getUTCDay()
+    if (dow !== 0 && dow !== 6) added++
+  }
+  return result
+}
+
 export async function GET(req: NextRequest) {
   const supabase = createServiceClient()
   const url = req.nextUrl.searchParams
@@ -61,9 +72,37 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const supabase = createServiceClient()
   const body = await req.json()
-  const { id, ...updates } = body
+  const { id, clear_followup_override, ...updates } = body
 
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 })
+
+  // If caller asks to clear the manual override, recompute next_followup_at
+  // from the latest outreach_log entry using the configured cadence.
+  if (clear_followup_override) {
+    const [latestRes, settingsRes] = await Promise.all([
+      supabase
+        .from("outreach_log")
+        .select("sent_at, created_at")
+        .eq("lead_id", id)
+        .not("status", "in", "(scheduled,cancelled)")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("app_settings").select("followup_business_days").eq("id", true).single(),
+    ])
+    const days = settingsRes.data?.followup_business_days ?? 7
+
+    let newFollowup: string | null = null
+    if (latestRes.data) {
+      const baseTs = latestRes.data.sent_at ?? latestRes.data.created_at
+      newFollowup = addBusinessDays(new Date(baseTs), days).toISOString()
+    }
+    updates.next_followup_at = newFollowup
+    updates.next_followup_manual_override = false
+  } else if (Object.prototype.hasOwnProperty.call(updates, "next_followup_at")) {
+    // Any explicit set of next_followup_at is treated as a manual override.
+    updates.next_followup_manual_override = true
+  }
 
   const { data, error } = await supabase
     .from("leads")

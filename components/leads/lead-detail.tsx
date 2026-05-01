@@ -77,7 +77,7 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
     fetchLog()
   }, [fetchLog])
 
-  async function updateLead(updates: Partial<Lead>) {
+  async function updateLead(updates: Partial<Lead> & { clear_followup_override?: boolean }) {
     const res = await fetch("/api/leads", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -88,6 +88,15 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
       onUpdate(updated)
       toast.success("Lead updated")
     }
+  }
+
+  function followupInputValue(): string {
+    if (!lead.next_followup_at) return ""
+    const d = new Date(lead.next_followup_at)
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const dd = String(d.getDate()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd}`
   }
 
   async function saveContactInfo() {
@@ -442,6 +451,47 @@ export function LeadDetail({ lead, sequences, onUpdate, onClose }: LeadDetailPro
                 <SelectItem value="low_priority">Low Priority</SelectItem>
               </SelectContent>
             </Select>
+          </CardContent>
+        </Card>
+
+        {/* Next Follow-up */}
+        <Card className="shadow-sm">
+          <CardHeader className="py-3 pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Next Follow-up
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Label className="text-xs">Date</Label>
+                <Input
+                  type="date"
+                  value={followupInputValue()}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    updateLead({
+                      next_followup_at: val ? new Date(`${val}T12:00:00`).toISOString() : null,
+                    } as Partial<Lead>)
+                  }}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => updateLead({ clear_followup_override: true })}
+                disabled={!lead.next_followup_manual_override}
+                title="Recompute as 7 business days after the most recent outreach"
+              >
+                Reset to auto
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {lead.next_followup_manual_override
+                ? "Manually set — won't be auto-updated by new outreach."
+                : "Auto: 7 business days after the most recent outreach log entry."}
+            </p>
           </CardContent>
         </Card>
 

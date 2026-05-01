@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [metroFilter, setMetroFilter] = useState("all")
   const [tierFilter, setTierFilter] = useState("all")
   const [loading, setLoading] = useState(true)
+  const [followupDays, setFollowupDays] = useState<number>(7)
 
   const fetchLeads = useCallback(async () => {
     const params = new URLSearchParams()
@@ -55,6 +56,23 @@ export default function Dashboard() {
   useEffect(() => {
     fetchSequences()
   }, [fetchSequences])
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        if (s?.followup_business_days) setFollowupDays(s.followup_business_days)
+      })
+  }, [])
+
+  async function saveFollowupDays(n: number) {
+    setFollowupDays(n)
+    await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ followup_business_days: n }),
+    })
+  }
 
   // Debounced search
   const [searchInput, setSearchInput] = useState("")
@@ -97,6 +115,21 @@ export default function Dashboard() {
             </Badge>
           </div>
           <div className="flex items-center gap-5 text-sm">
+            <label className="flex items-center gap-1.5 text-muted-foreground" title="Default follow-up cadence (business days after last outreach)">
+              <span className="text-xs">Follow-up after</span>
+              <Input
+                type="number"
+                min={1}
+                max={60}
+                value={followupDays}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value, 10)
+                  if (!Number.isNaN(n) && n >= 1 && n <= 60) saveFollowupDays(n)
+                }}
+                className="h-7 w-14 text-xs"
+              />
+              <span className="text-xs">biz days</span>
+            </label>
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
               <span className="font-medium text-foreground">{stats.new}</span> new

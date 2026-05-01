@@ -36,6 +36,8 @@ export interface Lead {
   current_step_number: number
   last_contacted_at: string | null
   next_scheduled_at: string | null
+  next_followup_at: string | null
+  next_followup_manual_override: boolean
   tags: string[]
   created_at: string
   updated_at: string
